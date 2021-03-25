@@ -15,9 +15,9 @@ char auth[] = "";
 char ssid[] = "";
 char pass[] = "";
 
-int tinggiPenampung = 100; // cm
-int batasAtas = 5; // cm, batas penuhnya air. Mematikan motor.
-int batasBawah = 20; // cm, batas sedikitnya air. Menyalakan motor.
+int tinggiPenampung = 10; // cm
+int batasAtas = 9; // cm, batas penuhnya air. Mematikan motor.
+int batasBawah = 2; // cm, batas sedikitnya air. Menyalakan motor.
 int pompa = 0; // off
 
 void setup() {
@@ -28,7 +28,7 @@ void setup() {
 }
  
 void loop() {
-  long duration, distance;
+  long duration, distance, ketinggian;
   digitalWrite(triggerPin, LOW);
   delayMicroseconds(8);
   digitalWrite(triggerPin, HIGH);
@@ -36,25 +36,29 @@ void loop() {
   digitalWrite(triggerPin, LOW);
   duration = pulseIn(echoPin, HIGH);
   distance = duration * 0.034 / 2;
-  Serial.print("Ketinggian: ");
-  Serial.print(distance);
+  ketinggian = tinggiPenampung - distance;
+  Serial.print("Ketinggian air: ");
+  Serial.print(ketinggian);
   Serial.println(" cm");
 
-  if (distance <= batasAtas && pompa == 1){
+  if (ketinggian >= batasAtas && pompa == 1){
     delay(500);
     Serial.println("Tank Penuh, pompa akan dimatikan.");
     Blynk.notify("Tank Penuh, pompa akan dimatikan.");
     pompa = 0;
+    Blynk.virtualWrite(V1, LOW);
   }
-  else if (distance >= batasBawah && distance < tinggiPenampung && pompa == 0){
+  else if (ketinggian <= batasBawah && distance < tinggiPenampung && pompa == 0){
     delay(500);
     
     Serial.println("Tank Kosong, pompa akan dinyalakan.");
     Blynk.notify("Tank Kosong, pompa akan dinyalakan.");
     pompa = 1;
+    Blynk.virtualWrite(V1, HIGH);
   }
   
-  Blynk.virtualWrite(V5, distance);
+  Blynk.virtualWrite(V5, ketinggian);
+  Blynk.virtualWrite(V4, distance);
   delay(200);
 
   Blynk.run();
