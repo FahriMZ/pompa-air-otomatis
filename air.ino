@@ -1,5 +1,6 @@
 #define triggerPin 16
 #define echoPin 5
+#define relayPin 14
 #define BLYNK_PRINT Serial
 
 
@@ -15,9 +16,9 @@ char auth[] = "";
 char ssid[] = "";
 char pass[] = "";
 
-int tinggiPenampung = 10; // cm
-int batasAtas = 9; // cm, batas penuhnya air. Mematikan motor.
-int batasBawah = 2; // cm, batas sedikitnya air. Menyalakan motor.
+int tinggiPenampung = 40; // cm
+int batasAtas = 30; // cm, batas penuhnya air. Mematikan motor.
+int batasBawah = 10; // cm, batas sedikitnya air. Menyalakan motor.
 int pompa = 0; // off
 
 void setup() {
@@ -25,6 +26,9 @@ void setup() {
   Blynk.begin(auth, ssid, pass);
   pinMode(triggerPin, OUTPUT);
   pinMode(echoPin, INPUT);
+  pinMode(relayPin, OUTPUT);
+
+  digitalWrite(relayPin, LOW);
 }
  
 void loop() {
@@ -47,6 +51,7 @@ void loop() {
     Blynk.notify("Tank Penuh, pompa akan dimatikan.");
     pompa = 0;
     Blynk.virtualWrite(V1, LOW);
+    digitalWrite(relayPin, HIGH);
   }
   else if (ketinggian <= batasBawah && distance < tinggiPenampung && pompa == 0){
     delay(500);
@@ -55,6 +60,7 @@ void loop() {
     Blynk.notify("Tank Kosong, pompa akan dinyalakan.");
     pompa = 1;
     Blynk.virtualWrite(V1, HIGH);
+    digitalWrite(relayPin, LOW);
   }
   
   Blynk.virtualWrite(V5, ketinggian);
